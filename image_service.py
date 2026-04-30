@@ -1,8 +1,14 @@
+import os
 import pytesseract
 from PIL import Image, ImageOps, ImageFilter
 
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+# Render/Linux server
+else:
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 
 def extract_text_from_image(image_file):
@@ -10,6 +16,7 @@ def extract_text_from_image(image_file):
 
     attempts = []
 
+    # Original image
     attempts.append(image)
 
     gray = image.convert("L")
