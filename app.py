@@ -71,7 +71,7 @@ def analyze_image():
     print("OCR TEXT FROM IMAGE:")
     print(image_text)
 
-    if len(image_text.strip()) < 5:
+    if len(image_text.strip()) < 3:
         return jsonify({
             "result": (
                 "Risk Level: Medium\n"
