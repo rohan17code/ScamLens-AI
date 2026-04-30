@@ -103,5 +103,14 @@ def analyze_link():
     return jsonify({"result": result})
 
 
+@app.route("/test-ocr")
+def test_ocr():
+    import pytesseract
+
+    return jsonify({
+        "tesseract_path": pytesseract.pytesseract.tesseract_cmd
+    })
+
+
 if __name__ == "__main__":
     app.run(debug=True)
