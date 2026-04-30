@@ -9,7 +9,7 @@ else:
     pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 
-def resize_image(image, max_width=1200):
+def resize_image(image, max_width=750):
     width, height = image.size
 
     if width > max_width:
@@ -35,61 +35,52 @@ def get_ocr_attempts(image_file):
 
     gray = image.convert("L")
     gray = ImageOps.autocontrast(gray)
-
     sharp = gray.filter(ImageFilter.SHARPEN)
 
     inverted = ImageOps.invert(gray)
     inverted = ImageOps.autocontrast(inverted)
 
-    threshold = gray.point(lambda p: 255 if p > 150 else 0)
-    inverted_threshold = inverted.point(lambda p: 255 if p > 150 else 0)
-
     attempts = [
-        ("original", image),
-        ("gray", gray),
         ("sharp", sharp),
-        ("inverted", inverted),
-        ("threshold", threshold),
-        ("inverted_threshold", inverted_threshold)
+        ("inverted", inverted)
     ]
 
-    configs = [
-        "--oem 3 --psm 6",
-        "--oem 3 --psm 11"
-    ]
+    config = "--oem 3 --psm 6"
 
     results = []
     best_text = ""
 
     for name, img in attempts:
-        for config in configs:
-            try:
-                text = pytesseract.image_to_string(
-                    img,
-                    config=config,
-                    timeout=8
-                )
+        try:
+            text = pytesseract.image_to_string(
+                img,
+                config=config,
+                timeout=25
+            )
 
-                text = clean_ocr_text(text)
+            text = clean_ocr_text(text)
 
-                results.append({
-                    "attempt": name,
-                    "config": config,
-                    "text": text,
-                    "length": len(text)
-                })
+            results.append({
+                "attempt": name,
+                "config": config,
+                "text": text,
+                "length": len(text)
+            })
 
-                if len(text) > len(best_text):
-                    best_text = text
+            if len(text) > len(best_text):
+                best_text = text
 
-            except Exception as e:
-                results.append({
-                    "attempt": name,
-                    "config": config,
-                    "text": "",
-                    "length": 0,
-                    "error": str(e)
-                })
+            if len(best_text.strip()) > 20:
+                return best_text, results
+
+        except Exception as e:
+            results.append({
+                "attempt": name,
+                "config": config,
+                "text": "",
+                "length": 0,
+                "error": str(e)
+            })
 
     return best_text, results
 
