@@ -10,6 +10,9 @@ app = Flask(__name__)
 CORS(app)
 
 
+MAX_ANALYSIS_TEXT = 2000
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -24,6 +27,7 @@ def analyze():
         message = data.get("message", "")
 
         text = f"Contact Name: {contact_name}\nMessage: {message}"
+        text = text[:MAX_ANALYSIS_TEXT]
 
         result = analyze_text_with_ai(text, "Message")
 
@@ -61,8 +65,7 @@ def analyze_pdf():
                 )
             })
 
-        # Limit long PDF text to avoid timeout
-        pdf_text = pdf_text[:3500]
+        pdf_text = pdf_text[:MAX_ANALYSIS_TEXT]
 
         result = analyze_text_with_ai(pdf_text, "PDF")
 
@@ -103,8 +106,7 @@ def analyze_image():
                 )
             })
 
-        # Important: limit OCR text so large academic/result images do not crash AI request
-        image_text = image_text[:3500]
+        image_text = image_text[:MAX_ANALYSIS_TEXT]
 
         result = analyze_text_with_ai(image_text, "Image")
 
@@ -134,6 +136,8 @@ def analyze_link():
                     "Reason: No link was provided, so the website risk cannot be checked properly."
                 )
             })
+
+        link = link[:MAX_ANALYSIS_TEXT]
 
         result = analyze_text_with_ai(link, "Link")
 
