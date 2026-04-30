@@ -52,5 +52,5 @@ I made this project to detect common online scam patterns like OTP fraud, fake r
 Clone the repository:
 
 ```bash
-git clone your-repository-link
+git clone https://github.com/rohan17code/ScamLens-AI.git
 cd ScamLens-AI
