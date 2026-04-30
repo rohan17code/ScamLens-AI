@@ -17,90 +17,136 @@ def home():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    data = request.json
+    try:
+        data = request.json
 
-    contact_name = data.get("contact_name", "")
-    message = data.get("message", "")
+        contact_name = data.get("contact_name", "")
+        message = data.get("message", "")
 
-    text = f"Contact Name: {contact_name}\nMessage: {message}"
+        text = f"Contact Name: {contact_name}\nMessage: {message}"
 
-    result = analyze_text_with_ai(text, "Message")
+        result = analyze_text_with_ai(text, "Message")
 
-    return jsonify({"result": result})
+        return jsonify({"result": result})
+
+    except Exception as e:
+        print("MESSAGE ANALYSIS ERROR:", str(e), flush=True)
+        return jsonify({
+            "result": (
+                "Risk Level: Medium\n"
+                "Reason: Message analysis failed due to a server issue, so please try again."
+            )
+        })
 
 
 @app.route("/analyze-pdf", methods=["POST"])
 def analyze_pdf():
-    if "pdf" not in request.files:
+    try:
+        if "pdf" not in request.files:
+            return jsonify({
+                "result": (
+                    "Risk Level: Medium\n"
+                    "Reason: No PDF file was uploaded, so the document risk cannot be checked properly."
+                )
+            })
+
+        pdf_file = request.files["pdf"]
+        pdf_text = extract_text_from_pdf(pdf_file)
+
+        if len(pdf_text.strip()) < 5:
+            return jsonify({
+                "result": (
+                    "Risk Level: Medium\n"
+                    "Reason: The PDF text could not be read clearly, so a safer review is needed."
+                )
+            })
+
+        # Limit long PDF text to avoid timeout
+        pdf_text = pdf_text[:3500]
+
+        result = analyze_text_with_ai(pdf_text, "PDF")
+
+        return jsonify({"result": result})
+
+    except Exception as e:
+        print("PDF ANALYSIS ERROR:", str(e), flush=True)
         return jsonify({
             "result": (
                 "Risk Level: Medium\n"
-                "Reason: No PDF file was uploaded, so the document risk cannot be checked properly."
+                "Reason: PDF analysis failed due to a server issue, so please try again."
             )
         })
-
-    pdf_file = request.files["pdf"]
-    pdf_text = extract_text_from_pdf(pdf_file)
-
-    if len(pdf_text.strip()) < 5:
-        return jsonify({
-            "result": (
-                "Risk Level: Medium\n"
-                "Reason: The PDF text could not be read clearly, so a safer review is needed."
-            )
-        })
-
-    result = analyze_text_with_ai(pdf_text, "PDF")
-
-    return jsonify({"result": result})
 
 
 @app.route("/analyze-image", methods=["POST"])
 def analyze_image():
-    if "image" not in request.files:
+    try:
+        if "image" not in request.files:
+            return jsonify({
+                "result": (
+                    "Risk Level: Medium\n"
+                    "Reason: No image file was uploaded, so the screenshot risk cannot be checked properly."
+                )
+            })
+
+        image_file = request.files["image"]
+        image_text = extract_text_from_image(image_file)
+
+        print("OCR TEXT FROM IMAGE:", flush=True)
+        print(image_text, flush=True)
+
+        if len(image_text.strip()) < 3:
+            return jsonify({
+                "result": (
+                    "Risk Level: Medium\n"
+                    "Reason: Text could not be clearly read from the image, so upload a clearer screenshot."
+                )
+            })
+
+        # Important: limit OCR text so large academic/result images do not crash AI request
+        image_text = image_text[:3500]
+
+        result = analyze_text_with_ai(image_text, "Image")
+
+        return jsonify({"result": result})
+
+    except Exception as e:
+        print("IMAGE ANALYSIS ERROR:", str(e), flush=True)
         return jsonify({
             "result": (
                 "Risk Level: Medium\n"
-                "Reason: No image file was uploaded, so the screenshot risk cannot be checked properly."
+                "Reason: Image analysis failed due to a server issue, so please try again with a clearer or smaller image."
             )
         })
-
-    image_file = request.files["image"]
-    image_text = extract_text_from_image(image_file)
-
-    print("OCR TEXT FROM IMAGE:", flush=True)
-    print(image_text, flush=True)
-
-    if len(image_text.strip()) < 3:
-        return jsonify({
-            "result": (
-                "Risk Level: Medium\n"
-                "Reason: Text could not be clearly read from the image, so upload a clearer screenshot."
-            )
-        })
-
-    result = analyze_text_with_ai(image_text, "Image")
-
-    return jsonify({"result": result})
 
 
 @app.route("/analyze-link", methods=["POST"])
 def analyze_link():
-    data = request.json
+    try:
+        data = request.json
 
-    link = data.get("link", "")
+        link = data.get("link", "")
 
-    if not link.strip():
+        if not link.strip():
+            return jsonify({
+                "result": (
+                    "Risk Level: Medium\n"
+                    "Reason: No link was provided, so the website risk cannot be checked properly."
+                )
+            })
+
+        result = analyze_text_with_ai(link, "Link")
+
+        return jsonify({"result": result})
+
+    except Exception as e:
+        print("LINK ANALYSIS ERROR:", str(e), flush=True)
         return jsonify({
             "result": (
                 "Risk Level: Medium\n"
-                "Reason: No link was provided, so the website risk cannot be checked properly."
+                "Reason: Link analysis failed due to a server issue, so please try again."
             )
         })
-
-    result = analyze_text_with_ai(link, "Link")
-
-    return jsonify({"result": result})
 
 
 @app.route("/test-ocr")
@@ -114,18 +160,25 @@ def test_ocr():
 
 @app.route("/debug-image", methods=["POST"])
 def debug_image():
-    if "image" not in request.files:
+    try:
+        if "image" not in request.files:
+            return jsonify({
+                "error": "No image file uploaded. Use key name exactly: image"
+            })
+
+        image_file = request.files["image"]
+        image_text = extract_text_from_image(image_file)
+
         return jsonify({
-            "error": "No image file uploaded. Use key name exactly: image"
+            "ocr_text": image_text,
+            "length": len(image_text.strip())
         })
 
-    image_file = request.files["image"]
-    image_text = extract_text_from_image(image_file)
-
-    return jsonify({
-        "ocr_text": image_text,
-        "length": len(image_text.strip())
-    })
+    except Exception as e:
+        print("DEBUG IMAGE ERROR:", str(e), flush=True)
+        return jsonify({
+            "error": str(e)
+        })
 
 
 if __name__ == "__main__":
