@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 
 from ai_service import analyze_text_with_ai
 from pdf_service import extract_text_from_pdf
@@ -6,6 +7,7 @@ from image_service import extract_text_from_image
 
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route("/")
