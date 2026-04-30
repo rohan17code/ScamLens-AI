@@ -68,8 +68,8 @@ def analyze_image():
     image_file = request.files["image"]
     image_text = extract_text_from_image(image_file)
 
-    print("OCR TEXT FROM IMAGE:")
-    print(image_text)
+    print("OCR TEXT FROM IMAGE:", flush=True)
+    print(image_text, flush=True)
 
     if len(image_text.strip()) < 3:
         return jsonify({
@@ -109,6 +109,22 @@ def test_ocr():
 
     return jsonify({
         "tesseract_path": pytesseract.pytesseract.tesseract_cmd
+    })
+
+
+@app.route("/debug-image", methods=["POST"])
+def debug_image():
+    if "image" not in request.files:
+        return jsonify({
+            "error": "No image file uploaded. Use key name exactly: image"
+        })
+
+    image_file = request.files["image"]
+    image_text = extract_text_from_image(image_file)
+
+    return jsonify({
+        "ocr_text": image_text,
+        "length": len(image_text.strip())
     })
 
 
