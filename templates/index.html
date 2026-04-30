@@ -333,6 +333,8 @@
     </div>
 
     <script>
+        const API_BASE_URL = "https://scamlens-ai-backend.onrender.com";
+
         function resetResultStyle() {
             const resultBox = document.getElementById("result");
             resultBox.classList.remove("safe", "medium", "high");
@@ -372,7 +374,7 @@
             resetResultStyle();
             document.getElementById("result").innerText = "Analyzing message...";
 
-            const response = await fetch("/analyze", {
+            const response = await fetch(`${API_BASE_URL}/analyze`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -400,7 +402,7 @@
             resetResultStyle();
             document.getElementById("result").innerText = "Analyzing link...";
 
-            const response = await fetch("/analyze-link", {
+            const response = await fetch(`${API_BASE_URL}/analyze-link`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -432,10 +434,10 @@
 
             if (file.type === "application/pdf") {
                 formData.append("pdf", file);
-                url = "/analyze-pdf";
+                url = `${API_BASE_URL}/analyze-pdf`;
             } else if (file.type.startsWith("image/")) {
                 formData.append("image", file);
-                url = "/analyze-image";
+                url = `${API_BASE_URL}/analyze-image`;
             } else {
                 document.getElementById("result").innerText = "Only PDF or image files are allowed.";
                 return;
