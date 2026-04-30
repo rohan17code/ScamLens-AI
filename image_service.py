@@ -3,16 +3,13 @@ import pytesseract
 from PIL import Image, ImageOps, ImageFilter
 
 
-# Windows local system
 if os.name == "nt":
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-# Render/Linux server
 else:
     pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 
-def resize_image(image, max_width=900):
+def resize_image(image, max_width=1200):
     width, height = image.size
 
     if width > max_width:
@@ -32,7 +29,7 @@ def clean_ocr_text(text):
     return text.strip()
 
 
-def extract_text_from_image(image_file):
+def get_ocr_attempts(image_file):
     image = Image.open(image_file).convert("RGB")
     image = resize_image(image)
 
@@ -44,48 +41,59 @@ def extract_text_from_image(image_file):
     inverted = ImageOps.invert(gray)
     inverted = ImageOps.autocontrast(inverted)
 
+    threshold = gray.point(lambda p: 255 if p > 150 else 0)
+    inverted_threshold = inverted.point(lambda p: 255 if p > 150 else 0)
+
     attempts = [
+        ("original", image),
         ("gray", gray),
         ("sharp", sharp),
-        ("inverted", inverted)
+        ("inverted", inverted),
+        ("threshold", threshold),
+        ("inverted_threshold", inverted_threshold)
     ]
 
+    configs = [
+        "--oem 3 --psm 6",
+        "--oem 3 --psm 11"
+    ]
+
+    results = []
     best_text = ""
 
-    important_words = [
-        "lottery", "winner", "won", "prize", "claim",
-        "congratulations", "reward", "giveaway",
-        "otp", "password", "bank", "payment", "click",
-        "link", "http", "www",
-        "student", "result", "semester", "marks",
-        "grade", "sgpa", "cgpa", "institute", "university"
-    ]
-
-    print("TESSERACT PATH:", pytesseract.pytesseract.tesseract_cmd, flush=True)
-
     for name, img in attempts:
-        try:
-            text = pytesseract.image_to_string(
-                img,
-                config="--oem 3 --psm 6",
-                timeout=6
-            )
+        for config in configs:
+            try:
+                text = pytesseract.image_to_string(
+                    img,
+                    config=config,
+                    timeout=8
+                )
 
-            text = clean_ocr_text(text)
+                text = clean_ocr_text(text)
 
-            print("OCR attempt:", name, flush=True)
-            print(text, flush=True)
+                results.append({
+                    "attempt": name,
+                    "config": config,
+                    "text": text,
+                    "length": len(text)
+                })
 
-            if len(text) > len(best_text):
-                best_text = text
+                if len(text) > len(best_text):
+                    best_text = text
 
-            lower_text = best_text.lower()
+            except Exception as e:
+                results.append({
+                    "attempt": name,
+                    "config": config,
+                    "text": "",
+                    "length": 0,
+                    "error": str(e)
+                })
 
-            if len(best_text.strip()) > 25:
-                if any(word in lower_text for word in important_words):
-                    return best_text
+    return best_text, results
 
-        except Exception as e:
-            print("OCR failed:", name, str(e), flush=True)
 
+def extract_text_from_image(image_file):
+    best_text, results = get_ocr_attempts(image_file)
     return best_text

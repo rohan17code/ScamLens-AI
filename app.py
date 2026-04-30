@@ -170,12 +170,15 @@ def debug_image():
                 "error": "No image file uploaded. Use key name exactly: image"
             })
 
+        from image_service import get_ocr_attempts
+
         image_file = request.files["image"]
-        image_text = extract_text_from_image(image_file)
+        best_text, attempts = get_ocr_attempts(image_file)
 
         return jsonify({
-            "ocr_text": image_text,
-            "length": len(image_text.strip())
+            "ocr_text": best_text,
+            "length": len(best_text.strip()),
+            "attempts": attempts
         })
 
     except Exception as e:
