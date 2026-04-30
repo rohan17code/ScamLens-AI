@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ScamLens AI</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #000000;
+            color: white;
+            padding-bottom: 35px;
+        }
+
+        .page {
+            width: 95%;
+            max-width: 1150px;
+            margin: 25px auto;
+        }
+
+        .hero-floating {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 10px;
+        }
+
+        h1 {
+            font-size: 44px;
+            margin: 10px 0;
+            color: #ffffff;
+            text-shadow: 0 0 18px rgba(255, 255, 255, 0.35);
+        }
+
+        .scam-red {
+            color: #ff2b2b;
+            text-shadow: 0 0 12px rgba(255, 43, 43, 0.8);
+        }
+
+        .typing-text {
+            font-size: 18px;
+            color: #dcdcdc;
+            max-width: 900px;
+            margin: 12px auto 0;
+            line-height: 1.5;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 3px solid white;
+            animation: typing 4.5s steps(95) forwards, blink 0.8s infinite;
+        }
+
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes blink {
+            50% {
+                border-color: transparent;
+            }
+        }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .section {
+            background: #1f1f1f;
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid #333;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-4px);
+            border-color: #555;
+            box-shadow: 0 12px 26px rgba(255, 255, 255, 0.08);
+        }
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-size: 20px;
+        }
+
+        p {
+            color: #bbbbbb;
+            font-size: 13px;
+            line-height: 1.4;
+            margin: 0 0 10px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 11px;
+            margin-top: 10px;
+            border-radius: 9px;
+            border: 1px solid #4b4b4b;
+            font-size: 14px;
+            background: #2b2b2b;
+            color: white;
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus, textarea:focus {
+            border-color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.16);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #bfbfbf;
+        }
+
+        textarea {
+            height: 95px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 14px;
+            padding: 11px;
+            background: #000000;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 9px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #111111, 0 0 12px rgba(255, 255, 255, 0.07);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease;
+        }
+
+        button:hover {
+            background: #111111;
+            box-shadow: 0 5px 0 #111111, 0 0 16px rgba(255, 255, 255, 0.14);
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #111111;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: block;
+            width: 100%;
+            padding: 11px;
+            margin-top: 10px;
+            border-radius: 9px;
+            background: #2b2b2b;
+            border: 1px dashed #777;
+            color: #dcdcdc;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .file-label:hover {
+            background: #333333;
+            border-color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.16);
+        }
+
+        #fileName {
+            margin-top: 8px;
+            color: #cfcfcf;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .result-box {
+            margin-top: 22px;
+            padding: 18px;
+            background: #1f1f1f;
+            border-radius: 14px;
+            white-space: pre-line;
+            color: white;
+            border: 2px solid transparent;
+            min-height: 60px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+            transition: all 0.3s ease;
+        }
+
+        .safe {
+            border-color: #22c55e;
+            box-shadow: 0 0 22px rgba(34, 197, 94, 0.75);
+        }
+
+        .medium {
+            border-color: #eab308;
+            box-shadow: 0 0 22px rgba(234, 179, 8, 0.75);
+        }
+
+        .high {
+            border-color: #ef4444;
+            box-shadow: 0 0 22px rgba(239, 68, 68, 0.8);
+        }
+
+        .watermark-bar {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background: #111111;
+            border-top: 1px solid #222;
+            text-align: center;
+            padding: 8px 10px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14px;
+            color: #8e8e8e;
+            z-index: 999;
+            box-shadow: 0 -2px 12px rgba(255, 255, 255, 0.04);
+        }
+
+        .watermark-bar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .watermark-bar a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .sections-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .typing-text {
+                white-space: normal;
+                border-right: none;
+                animation: fadeIn 1.3s ease forwards;
+            }
+
+            h1 {
+                font-size: 34px;
+            }
+
+            .watermark-bar {
+                font-size: 13px;
+                padding: 7px 10px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page">
+
+        <div class="hero-floating">
+            <h1><span class="scam-red">Scam</span>Lens AI</h1>
+
+            <div class="typing-text">
+                Scan messages, suspicious links, PDFs, and screenshots to detect scams, phishing, and risky content.
+            </div>
+        </div>
+
+        <div class="sections-grid">
+
+            <div class="section">
+                <h3>Analyze Message</h3>
+                <p>Paste any suspicious chat or SMS message.</p>
+
+                <input type="text" id="contactName" placeholder="Enter contact name">
+                <textarea id="message" placeholder="Enter message"></textarea>
+
+                <button onclick="analyzeMessage()">Analyze Message</button>
+            </div>
+
+            <div class="section">
+                <h3>Analyze Link</h3>
+                <p>Paste a URL to check if it looks risky.</p>
+
+                <input type="text" id="linkInput" placeholder="Paste suspicious link here">
+
+                <button onclick="analyzeLink()">Analyze Link</button>
+            </div>
+
+            <div class="section">
+                <h3>Analyze PDF / Image</h3>
+                <p>Upload a PDF, resume, document, or screenshot.</p>
+
+                <label for="fileInput" class="file-label">Choose PDF or Image</label>
+                <input type="file" id="fileInput" accept="application/pdf,image/*" onchange="showFileName()">
+
+                <div id="fileName">No file selected</div>
+
+                <button onclick="analyzeFile()">Analyze File</button>
+            </div>
+
+        </div>
+
+        <div class="result-box" id="result">
+            Result will appear here...
+        </div>
+
+    </div>
+
+    <div class="watermark-bar">
+        Built by Rohan Tyagi •
+        <a href="https://www.linkedin.com/in/rohan-tyagi-0b4424270/" target="_blank">
+            LinkedIn
+        </a>
+    </div>
+
+    <script>
+        function resetResultStyle() {
+            const resultBox = document.getElementById("result");
+            resultBox.classList.remove("safe", "medium", "high");
+        }
+
+        function applyRiskColor(resultText) {
+            const resultBox = document.getElementById("result");
+
+            resultBox.classList.remove("safe", "medium", "high");
+
+            const lowerText = resultText.toLowerCase();
+
+            if (lowerText.includes("risk level: safe")) {
+                resultBox.classList.add("safe");
+            } else if (lowerText.includes("risk level: medium")) {
+                resultBox.classList.add("medium");
+            } else if (lowerText.includes("risk level: high")) {
+                resultBox.classList.add("high");
+            }
+        }
+
+        function showFileName() {
+            const file = document.getElementById("fileInput").files[0];
+            const fileName = document.getElementById("fileName");
+
+            if (file) {
+                fileName.innerText = file.name;
+            } else {
+                fileName.innerText = "No file selected";
+            }
+        }
+
+        async function analyzeMessage() {
+            const contactName = document.getElementById("contactName").value;
+            const message = document.getElementById("message").value;
+
+            resetResultStyle();
+            document.getElementById("result").innerText = "Analyzing message...";
+
+            const response = await fetch("/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contact_name: contactName,
+                    message: message
+                })
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText = data.result;
+            applyRiskColor(data.result);
+        }
+
+        async function analyzeLink() {
+            const link = document.getElementById("linkInput").value;
+
+            if (!link) {
+                resetResultStyle();
+                document.getElementById("result").innerText = "Please paste a link first.";
+                return;
+            }
+
+            resetResultStyle();
+            document.getElementById("result").innerText = "Analyzing link...";
+
+            const response = await fetch("/analyze-link", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    link: link
+                })
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText = data.result;
+            applyRiskColor(data.result);
+        }
+
+        async function analyzeFile() {
+            const file = document.getElementById("fileInput").files[0];
+
+            if (!file) {
+                resetResultStyle();
+                document.getElementById("result").innerText = "Please select a PDF or image file first.";
+                return;
+            }
+
+            resetResultStyle();
+            document.getElementById("result").innerText = "Analyzing file...";
+
+            const formData = new FormData();
+            let url = "";
+
+            if (file.type === "application/pdf") {
+                formData.append("pdf", file);
+                url = "/analyze-pdf";
+            } else if (file.type.startsWith("image/")) {
+                formData.append("image", file);
+                url = "/analyze-image";
+            } else {
+                document.getElementById("result").innerText = "Only PDF or image files are allowed.";
+                return;
+            }
+
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText = data.result;
+            applyRiskColor(data.result);
+        }
+    </script>
+
+</body>
+</html>

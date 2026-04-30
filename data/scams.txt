@@ -1,0 +1,8 @@
+Never share OTP, password, PIN, CVV, or bank details with anyone.
+Messages asking for OTP urgently are high risk.
+Messages asking for money transfer or processing fees can be scams.
+Fake lottery, prize, reward, giveaway, or winner messages are usually scams.
+Do not click unknown links claiming prize, reward, account unlock, or KYC update.
+Unknown links in normal documents are not always scams; check context before marking risk.
+Resumes, academic results, certificates, invoices, and normal documents can contain safe links.
+Messages that create urgency and ask for sensitive action are high risk.
